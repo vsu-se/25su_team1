@@ -72,16 +72,31 @@ public class SimpleLoginScreen extends Application {
         ComboBox<String> position = new ComboBox<>();
         position.getItems().addAll("Manager", "Staff");
         position.setValue("Manager");
+        
+        Label username = new Label("Create a username");
+        TextField usernameField = new TextField();
+        
+        Label passwrd = new Label("Create a password");
+        PasswordField passwrdField = new PasswordField();
+        
+        
         Button addEmployee = new Button("Add Employee");
         
         addEmployee.setOnAction(e -> {
         	String firstname = firstNamefield.getText();
         	String lastname = lastNamefield.getText();
         	String Position = position.getValue();
-        	if(firstname.length() > 0 && lastname.length() > 0) {
-        		creator.yo(firstname, lastname, Position);
-        		messageLabel.setText("added employee successfully!");
-                window.setScene(scene1);
+        	String usrname = usernameField.getText();
+        	String password = passwrdField.getText();
+        	if(firstname.length() > 0 && lastname.length() > 0 && usrname.length() > 0 && password.length() > 0) {
+        		if (user.containsKey(usrname)) {
+                    messageLabel.setText("Username already exists. Choose a different username.");
+                } else {
+                	user.put(usrname, password);
+                    creator.yo(firstname, lastname, usrname, password, Position);
+                    messageLabel.setText("Employee added successfully!");
+                    window.setScene(scene1);
+                }
         	} else {
                 messageLabel.setText("Failed to add employee.");
             }
@@ -90,7 +105,7 @@ public class SimpleLoginScreen extends Application {
         });
         
         VBox layout3 = new VBox(10);
-        layout3.getChildren().addAll(firstName, firstNamefield, lastName, lastNamefield, position, addEmployee);
+        layout3.getChildren().addAll(firstName, firstNamefield, lastName, lastNamefield, position, username, usernameField, passwrd, passwrdField, addEmployee);
         scene3 = new Scene(layout3, 600, 300);
         
        

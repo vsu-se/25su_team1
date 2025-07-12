@@ -1,26 +1,59 @@
 package application;
-public class Employee {
-    private String name;
-    private String position;
 
+import java.util.HashSet;
+import java.util.Random;
 
+class Employee {
+	private String FirstName;
+    private String LastName;
+	private String UserName;
+    private String Password;
+    private String Department;
+    private Double PayRate;
+    private Double TaxRate;
+    private int PTO;
+    private int ID; //4 digits
     
-    public Employee(String name, String position) {
-        if (name.length() == 0)
-            throw new RuntimeException("name must have length >0");
-        if (position.length() == 0)
-            throw new RuntimeException("position must have length >0");
 
-        this.name = name;
-        this.position = position;
+    private static final HashSet<Integer> uniqueIds = new HashSet<>();
+    private static final Random random = new Random();
+    
+    public Employee(String FirstName, String LastName, String UserName, String Password, String Department) {
+        this.FirstName = FirstName;
+        this.LastName = LastName;
+        this.UserName = UserName;
+        this.Password = Password;
+        this.Department = Department;
+        Double PayRate;
+        Double TaxRate;
+        int PTO;
+        this.ID = generateUniqueId();
     }
-
-
+    
+    public int generateUniqueId() {
+        int id;
+        do {
+            id = 1000 + random.nextInt(9000); 
+        } while (!uniqueIds.add(id)); //
+        return id;
+    }
+	
+    public String getDepartment() {
+    	return Department;
+    }
+    public void setDepartmentToManager() {
+    	this.Department = "Manager";
+    }
+    public String getFirstName() {
+    	return this.FirstName;
+    }
+    public String getLastName() {
+    	return this.LastName;
+    }
+    public int getID() {
+    	return this.ID;
+    }
     public String getName() {
-        return name;
-    }
-
-    public String getPosition() {
-        return position;
+    	return this.FirstName + " " + this.LastName;
     }
 }
