@@ -38,3 +38,20 @@ public class AddHours {
 		return hours[5]+hours[6];
 	}
 }
+//Helper Class
+class Employee {
+    private int remainingPTOHours;
+
+    public Employee(int startingPTOHours) {
+        this.remainingPTOHours = startingPTOHours;
+    }
+
+    public int getRemainingPTOHours() {
+        return remainingPTOHours;
+    }
+
+    public void usePTO(int hours) {
+        if (hours > 0 && remainingPTOHours >= hours) {
+            remainingPTOHours -= hours;
+        }
+    }
