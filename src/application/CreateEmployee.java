@@ -8,8 +8,10 @@ public class CreateEmployee {
 
         switch (position) {
         	case "Manager":
-        		currentManagersList.add(new Manager(firstname, lastname, UserName, Password));
-        		currentEmployeeList.add(new Employee(firstname, lastname, UserName, Password, "Manager"));
+        		//set this way so that they share IDS.
+        		Manager manager = new Manager(firstname, lastname, UserName, Password);
+        		currentManagersList.add(manager);
+        		currentEmployeeList.add(manager);
         		
                 break;
             case "Staff":
@@ -34,12 +36,16 @@ public class CreateEmployee {
         if (!currentManagersList.isEmpty()) {
             for (Manager m : currentManagersList) {
                 System.out.println("Employee Name: " + m.getName());
-                System.out.println("Position: " + m.getDepartment());
             }
         } else {
             System.out.println("No managers.");
         }
 
+    }
+    
+    
+    public List<Manager> getManagers() {
+        return new ArrayList<>(currentManagersList); // Return a copy to prevent external modification
     }
 }
     
