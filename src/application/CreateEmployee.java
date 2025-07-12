@@ -2,9 +2,10 @@ package application;
 import java.util.ArrayList;
 import java.util.List;
 public class CreateEmployee {
+    private List<Employee> currentEmployeeList = new ArrayList<>();
+    private List<Manager> currentManagersList = new ArrayList<>();
     public void yo(String firstname, String lastname, String position){
-        List<Employee> currentEmployeeList = new ArrayList<>();
-        List<Manager> currentManagersList = new ArrayList<>();
+
         switch (position) {
         	case "Manager":
         		currentManagersList.add(new Manager(firstname + " " +lastname));
