@@ -1,0 +1,40 @@
+public class AddHours {
+	private double[] hours = new double[7];
+
+	public double getHours(int day){
+		return hours[day];
+	}
+
+	public void setHours(int day, double hours){
+		this.hours[day]= hours;
+
+	}
+
+	public int getNumDaysWorked(){
+		int count = 0;
+
+		for (int i=0; i<hours.length; i++){
+			if (hours[i]>0)
+				count++;
+		}
+		return count;
+	}
+	public double getTotalHours(){
+		double total = 0;
+		for (int i=0; i<hours.length; i++){
+			total+= hours[i];
+		}
+		return total;
+	}
+
+	public double getWeekdayHours(){
+		double total = 0;
+		for (int i=0; i<hours.length-2; i++){
+			total+= hours[i];
+		}
+		return total;
+	}
+	public double getWeekendHours(){
+		return hours[5]+hours[6];
+	}
+}
