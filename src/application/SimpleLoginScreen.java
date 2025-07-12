@@ -123,14 +123,59 @@ public class SimpleLoginScreen extends Application {
         
         
         //layout 4
-        listView = new ListView<>();
-		Label titleLabel = new Label("Managers List");
-		Button back = new Button("Back");
-		back.setOnAction(e -> window.setScene(scene2));
-		VBox layout4 = new VBox(10);
-		layout4.getChildren().addAll(titleLabel, listView, back);
-		scene4 = new Scene(layout4, 600, 300);
-       
+	listView = new ListView<>();
+
+Label titleLabel = new Label("Employee and Manager Viewer");
+
+Button listEmployeesButton = new Button("List All Employees");
+listEmployeesButton.setOnAction(e -> {
+	listView.getItems().clear();
+
+	List<Employee> combined = new ArrayList<>();
+    combined.addAll(creator.getEmployees());
+    combined.addAll(creator.getManagers());
+
+    combined.sort(Comparator.comparing(Employee::getLastName)
+            .thenComparing(Employee::getFirstName)
+            .thenComparing(Employee::getDepartment)
+            .thenComparing(Employee::getID));
+
+    for (Employee emp : combined) {
+        String display = "Name: " + emp.getFirstName() + " " + emp.getLastName() +
+                (emp instanceof Manager ? " (Manager)" : "") +
+                ", Department: " + emp.getDepartment() +
+                ", ID: " + emp.getID() +
+                ", Username: " + emp.getUsername();
+        listView.getItems().add(display);
+    }
+});
+
+Button listManagersButton = new Button("List Managers Only");
+listManagersButton.setOnAction(e -> {
+    listView.getItems().clear();
+
+    List<Manager> managers = creator.getManagers();
+    managers.sort(Comparator.comparing(Manager::getLastName)
+            .thenComparing(Manager::getFirstName)
+            .thenComparing(Manager::getDepartment)
+            .thenComparing(Manager::getID));
+
+    for (Manager m : managers) {
+        String display = "Name: " + m.getFirstName() + " " + m.getLastName() +
+                " (Manager), Department: " + m.getDepartment() +
+                ", ID: " + m.getID() +
+                ", Username: " + m.getUsername();
+        listView.getItems().add(display);
+    }
+});
+
+Button back = new Button("Back");
+back.setOnAction(e -> window.setScene(scene2));
+
+	    VBox layout4 = new VBox(10);
+	    layout4.getChildren().addAll(titleLabel, listEmployeesButton, listManagersButton, listView, back);
+	    scene4 = new Scene(layout4, 600, 400);
+
         
         
     }
