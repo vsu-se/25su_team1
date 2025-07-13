@@ -106,6 +106,10 @@ public class SimpleLoginScreen extends Application {
         	} else {
                 messageLabel.setText("Failed to add employee.");
             }
+        	firstNamefield.clear();
+        	lastNamefield.clear();
+        	usernameField.clear();
+        	passwrdField.clear();
         	
         	
         });
@@ -160,12 +164,32 @@ public class SimpleLoginScreen extends Application {
         		listView.getItems().add(display);
 				}
 			});
-
+        
+        Button listByDepartment = new Button("List By Department");
+        listByDepartment.setOnAction(e -> {
+            listView.getItems().clear();
+            ListEmployeesByDepartment departmentLister = new ListEmployeesByDepartment();
+            // Add all employees and managers to the department lister
+            List<Employee> combined = new ArrayList<>();
+            combined.addAll(creator.getEmployees());
+            for (Employee emp : combined) {
+                departmentLister.newEmployee(emp);
+            }
+            // Get the sorted list by department
+            String[] sortedEmployees = departmentLister.getListEmployeesByDepartment();
+            // Add to listView
+            for (String display : sortedEmployees) {
+                listView.getItems().add(display);
+            }
+        });
         Button back = new Button("Back");
-        back.setOnAction(e -> window.setScene(scene2));
+        back.setOnAction(e -> {
+        	window.setScene(scene2);
+        	listView.getItems().clear();
+        });
 
 	    VBox layout4 = new VBox(10);
-	    layout4.getChildren().addAll(titleLabel, listEmployeesButton, listManagersButton, listView, back);
+	    layout4.getChildren().addAll(titleLabel, listEmployeesButton, listManagersButton, listByDepartment, listView, back);
 	    scene4 = new Scene(layout4, 600, 400);
 
         
