@@ -1,43 +1,79 @@
 public class AddHours {
-	private double[] hours = new double[7];
+    private double[] hours = new double[7];
+    private boolean[] isPTO = new boolean[7];
 
-	public double getHours(int day){
-		return hours[day];
-	}
+    
+    public void setHours(int day, double hours) {
+        if (day >= 0 && day < 7 && !isPTO[day]) {
+            this.hours[day] = hours;
+        }
+    }
 
-	public void setHours(int day, double hours){
-		this.hours[day]= hours;
+    
 
-	}
+ 
+    public double getHours(int day) {
+        if (day >= 0 && day < 7) {
+            return hours[day];
+        }
+        return 0;
+    }
 
-	public int getNumDaysWorked(){
-		int count = 0;
+    
+    public boolean setPTO(int day, Employee e) {
+        if (day >= 0 && day <= 4 && !isPTO[day] && hours[day] == 0) {
+            if (e.getRemainingPTOHours() >= 8) {
+                isPTO[day] = true;
+                hours[day] = 8;
+                e.usePTO(8);
+                return true;
+            }
+        }
+        return false;
+    }
 
-		for (int i=0; i<hours.length; i++){
-			if (hours[i]>0)
-				count++;
-		}
-		return count;
-	}
-	public double getTotalHours(){
-		double total = 0;
-		for (int i=0; i<hours.length; i++){
-			total+= hours[i];
-		}
-		return total;
-	}
+   
+    public boolean isPTO(int day) {
+        if (day >= 0 && day < 7) {
+            return isPTO[day];
+        }
+        return false;
+    }
 
-	public double getWeekdayHours(){
-		double total = 0;
-		for (int i=0; i<hours.length-2; i++){
-			total+= hours[i];
-		}
-		return total;
-	}
-	public double getWeekendHours(){
-		return hours[5]+hours[6];
-	}
+    public int getNumDaysWorked() {
+        int count = 0;
+        for (int i = 0; i < hours.length; i++) {
+            if (hours[i] > 0 && !isPTO[i]) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+   
+    public double getTotalHours() {
+        double total = 0;
+        for (double h : hours) {
+            total += h;
+        }
+        return total;
+    }
+
+    public double getWeekdayHours() {
+        double total = 0;
+        for (int i = 0; i < 5; i++) {
+            total += hours[i];
+        }
+        return total;
+    }
+
+     public double getWeekendHours() {
+        return hours[5] + hours[6];
+    }
 }
+
+
+
 //Helper Class
 class Employee {
     private int remainingPTOHours;
@@ -55,3 +91,4 @@ class Employee {
             remainingPTOHours -= hours;
         }
     }
+}
