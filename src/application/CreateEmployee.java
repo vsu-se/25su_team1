@@ -4,7 +4,7 @@ import java.util.List;
 public class CreateEmployee {
     private List<Employee> currentEmployeeList = new ArrayList<>();
     private List<Manager> currentManagersList = new ArrayList<>();
-    public void yo(String firstname, String lastname, String UserName, String Password, String position){
+    public void createEmp(String firstname, String lastname, String UserName, String Password, String position){
 
         switch (position) {
         	case "Manager":
