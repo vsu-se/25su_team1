@@ -21,25 +21,7 @@ public class CreateEmployee {
             	System.out.println("Invalid Answer");
                 break;
                 }
-
-        System.out.println("--- Staff Employees ---");
-        if (!currentEmployeeList.isEmpty()) {
-            for (Employee e : currentEmployeeList) {
-                System.out.println("Employee Name: " + e.getName());
-                System.out.println("Position: " + e.getDepartment());
-            }
-        } else {
-            System.out.println("No staff employees.");
-        }
-
-        System.out.println("--- Managers ---");
-        if (!currentManagersList.isEmpty()) {
-            for (Manager m : currentManagersList) {
-                System.out.println("Manager Name: " + m.getName());
-            }
-        } else {
-            System.out.println("No managers.");
-        }
+     
 
     }
     
