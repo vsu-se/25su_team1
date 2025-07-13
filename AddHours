@@ -20,7 +20,7 @@ public class AddHours {
     }
 
     
-    public boolean setPTO(int day, Employee e) {
+    public boolean setPTO(int day, PTO e) {
         if (day >= 0 && day <= 4 && !isPTO[day] && hours[day] == 0) {
             if (e.getRemainingPTOHours() >= 8) {
                 isPTO[day] = true;
@@ -75,10 +75,10 @@ public class AddHours {
 
 
 //Helper Class
-class Employee {
+class PTO {
     private int remainingPTOHours;
 
-    public Employee(int startingPTOHours) {
+    public PTO(int startingPTOHours) {
         this.remainingPTOHours = startingPTOHours;
     }
 
