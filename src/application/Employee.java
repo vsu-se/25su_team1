@@ -28,7 +28,7 @@ class Employee {
         Double TaxRate;
         int PTO;
         this.ID = generateUniqueId();
-    }
+    }	
     
     public int generateUniqueId() {
         int id;
@@ -49,6 +49,9 @@ class Employee {
     }
     public String getLastName() {
     	return this.LastName;
+    }
+    public String getUsername() {
+    	return this.UserName;
     }
     public int getID() {
     	return this.ID;

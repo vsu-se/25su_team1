@@ -35,7 +35,7 @@ public class CreateEmployee {
         System.out.println("--- Managers ---");
         if (!currentManagersList.isEmpty()) {
             for (Manager m : currentManagersList) {
-                System.out.println("Employee Name: " + m.getName());
+                System.out.println("Manager Name: " + m.getName());
             }
         } else {
             System.out.println("No managers.");
@@ -43,7 +43,10 @@ public class CreateEmployee {
 
     }
     
-    
+    public List<Employee> getEmployees() {
+        return new ArrayList<>(currentEmployeeList); // Return a copy to prevent external modification
+    }
+
     public List<Manager> getManagers() {
         return new ArrayList<>(currentManagersList); // Return a copy to prevent external modification
     }
