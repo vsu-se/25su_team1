@@ -14,6 +14,7 @@ public class Employee {
     private int ID;
 
     private PTO pto;
+    private AddHours addHours;
 
     private static final HashSet<Integer> uniqueIds = new HashSet<>();
     private static final Random random = new Random();
@@ -25,10 +26,11 @@ public class Employee {
         this.Password = Password;
         this.Department = Department;
         this.ID = generateUniqueId();
-        this.pto = new PTO(40);
+        this.pto = new PTO(40);         
+        this.addHours = new AddHours(); 
     }
 
-    public int generateUniqueId() {
+    private int generateUniqueId() {
         int id;
         do {
             id = 1000 + random.nextInt(9000);
@@ -66,6 +68,10 @@ public class Employee {
 
     public PTO getPTO() {
         return this.pto;
+    }
+
+    public AddHours getAddHours() {
+        return this.addHours;
     }
 
     @Override
