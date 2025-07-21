@@ -13,7 +13,6 @@ import java.util.List;
 
 public class ListEmployeeHours extends Application {
 
-    // This will be injected from your main system where employees are created and stored
     private static List<Employee> employeeList;
 
     public static void setEmployeeList(List<Employee> employees) {
@@ -29,14 +28,13 @@ public class ListEmployeeHours extends Application {
         if (employeeList == null) {
             listView.getItems().add("No employee data available.");
         } else {
-            // Sort employees by LastName, FirstName, Department, ID
+
             Collections.sort(employeeList, Comparator
                     .comparing(Employee::getLastName)
                     .thenComparing(Employee::getFirstName)
                     .thenComparing(Employee::getDepartment)
                     .thenComparingInt(Employee::getID));
 
-            // Display each employee's info and total hours
             for (Employee emp : employeeList) {
                 double totalHours = emp.getAddHours().getTotalHours();
                 String display = String.format("%s, %s (%s) - ID: %d - Total Hours: %.2f",
