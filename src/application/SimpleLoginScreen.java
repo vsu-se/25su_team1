@@ -218,7 +218,9 @@ public class SimpleLoginScreen extends Application {
                 if (user.containsKey(usrname)) {
                     messageLabel.setText("Username already exists. Choose a different username.");
                 } else {
+
                     user.put(usrname, password);
+
                     creator.createEmp(firstname, lastname, usrname, password, Position);
                     messageLabel.setText("Employee added successfully!");
                     window.setScene(scene2);
