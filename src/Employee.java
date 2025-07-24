@@ -27,9 +27,7 @@ public class Employee {
         this.Department = Department;
         this.ID = generateUniqueId();
         this.pto = new PTO(40);         
-        this.addHours = new AddHours();
-        this.PayRate = 15.0;
-        this.TaxRate = 0.4;
+        this.addHours = new AddHours(); 
     }
 
     private int generateUniqueId() {
@@ -75,15 +73,6 @@ public class Employee {
     public AddHours getAddHours() {
         return this.addHours;
     }
-    
-    public double getPayRate() {
-    	return this.PayRate;
-    }
-    
-    public double getTaxRate() {
-    	return this.TaxRate;
-    }
-    
 
     @Override
     public String toString() {
