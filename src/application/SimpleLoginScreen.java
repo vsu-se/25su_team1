@@ -1,40 +1,40 @@
 package application;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import java.util.Comparator;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.*;
 
 public class SimpleLoginScreen extends Application {
-	
-	Stage window;
-	Scene scene1, scene2, scene3,scene4;
-	CreateEmployee creator = new CreateEmployee();
-	ListView<String> listView;
+
+    Stage window;
+    Scene scene1, scene2, scene3, scene4, scene5, scene6;
+    CreateEmployee creator = new CreateEmployee();
+    ListView<String> listView;
+    AddHours currentAddHours = new AddHours();
+    PTO currentPTO = new PTO(40);
+    Employee selectedEmployee;
+    ViewPayStub viewPayStub = new ViewPayStub();
 
     private Map<String, String> user = new HashMap<>();
 
     @Override
     public void start(Stage primaryStage) {
-    	window = primaryStage;
+        window = primaryStage;
         initializeUsers();
 
         Label userLabel = new Label("Username:");
         TextField userField = new TextField();
-
         Label passLabel = new Label("Password:");
         PasswordField passField = new PasswordField();
-
         Button loginButton = new Button("Login");
         Label messageLabel = new Label();
 
-        
-        
         loginButton.setOnAction(e -> {
             String username = userField.getText();
             String password = passField.getText();
@@ -42,166 +42,281 @@ public class SimpleLoginScreen extends Application {
             if (user.containsKey(username) && user.get(username).equals(password)) {
                 messageLabel.setText("Login successful!");
                 window.setScene(scene2);
-                
             } else {
                 messageLabel.setText("Invalid username or password.");
             }
         });
 
-        VBox layout = new VBox(10);
-        layout.getChildren().addAll(userLabel, userField, passLabel, passField, loginButton, messageLabel);
-        scene1 = new Scene(layout, 400, 300);
+        VBox loginLayout = new VBox(10);
+        loginLayout.getChildren().addAll(userLabel, userField, passLabel, passField, loginButton, messageLabel);
+        scene1 = new Scene(loginLayout, 400, 300);
         window.setScene(scene1);
         window.setTitle("Manager Login");
         window.show();
-        
-        
-        //Layout 2 Will be used later on for delete or what now.
-        Button addEmployeeScene = new Button("Add employee");
+
+        Button addEmployeeScene = new Button("Add Employee");
         addEmployeeScene.setOnAction(e -> window.setScene(scene3));
+
         Button listEmployeeScene = new Button("List Employee");
         listEmployeeScene.setOnAction(e -> window.setScene(scene4));
+
+        Button logHoursButton = new Button("Log Hours for Employee");
+        logHoursButton.setOnAction(e -> {
+            List<Employee> employees = creator.getEmployees();
+            if (employees.isEmpty()) {
+                showAlert("No Employees", "No employees available to log hours.");
+                return;
+            }
+
+            ChoiceDialog<Employee> dialog = new ChoiceDialog<>(employees.get(0), employees);
+            dialog.setTitle("Select Employee");
+            dialog.setHeaderText("Choose an employee to log hours for:");
+            dialog.setContentText("Employee:");
+
+            dialog.showAndWait().ifPresent(emp -> {
+                VBox layout5 = new VBox(10);
+                Label titleLabel = new Label("Add Hours for " + emp.getName());
+
+                ComboBox<String> daySelector = new ComboBox<>();
+                daySelector.getItems().addAll("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
+
+                TextField hoursField = new TextField();
+                hoursField.setPromptText("Enter number of hours");
+
+                CheckBox ptoCheck = new CheckBox("Is this PTO?");
+
+                Button submitButton = new Button("Submit Hours");
+                Label ptoBalanceLabel = new Label("PTO Balance: " + emp.getPTO().getRemainingPTOHours() + " hours");
+                Label messageLabel5 = new Label();
+
+                Button summaryButton = new Button("Show Weekly Summary");
+                Button backButton = new Button("Back");
+                backButton.setOnAction(x -> window.setScene(scene2));
+
+                submitButton.setOnAction(x -> {
+                    int dayIndex = daySelector.getSelectionModel().getSelectedIndex();
+                    String hoursText = hoursField.getText();
+
+                    if (dayIndex == -1 || hoursText.isEmpty()) {
+                        messageLabel5.setText("Please select a day and enter hours.");
+                        return;
+                    }
+
+                    if (emp.getAddHours().getHours(dayIndex) > 0 || emp.getAddHours().isPTO(dayIndex)) {
+                        messageLabel5.setText("Hours already recorded for this day.");
+                        return;
+                    }
+
+                    try {
+                        double hours = Double.parseDouble(hoursText);
+
+                        if (ptoCheck.isSelected()) {
+                            if (hours != 8) {
+                                messageLabel5.setText("Only allowed 8 hours of PTO for the day.");
+                                return;
+                            }
+                            boolean ptoSet = emp.getAddHours().setPTO(dayIndex, emp.getPTO());
+                            messageLabel5.setText(ptoSet ? "PTO recorded." : "PTO not allowed or already used.");
+                        } else {
+                        	emp.getAddHours().setHours(dayIndex, hours);
+                            messageLabel5.setText("Regular hours recorded.");
+                        }
+
+                        ptoBalanceLabel.setText("PTO Balance: " + emp.getPTO().getRemainingPTOHours() + " hours");
+                    } catch (NumberFormatException ex) {
+                        messageLabel5.setText("Invalid number format for hours.");
+                    }
+                });
+
+                summaryButton.setOnAction(x -> {
+                showSummary(emp);});
+
+                layout5.getChildren().addAll(titleLabel, daySelector, hoursField, ptoCheck, submitButton, summaryButton, messageLabel5, ptoBalanceLabel, backButton);
+                scene5 = new Scene(layout5, 400, 400);
+                window.setScene(scene5);
+            });
+        });
+        Button ViewPayStubButton = new Button("View Employee Pay Stub");
+        ViewPayStubButton.setOnAction(e -> {
+
+    		VBox layout6 = new VBox(10);
+            List<Employee> employees = creator.getEmployees();
+            if (employees.isEmpty()) {
+                showAlert("No Employees", "No employee pay stubs available.");
+                return;
+            }
+            
+            ChoiceDialog<Employee> dialog = new ChoiceDialog<>(employees.get(0), employees);
+            dialog.setTitle("Select Employee");
+            dialog.setHeaderText("Choose an employee to log hours for:");
+            dialog.setContentText("Employee:");
+
+            dialog.showAndWait().ifPresent(emp -> {
+            	String[] PayStub = viewPayStub.PayStub(emp, emp.getAddHours(), emp.getPTO());
+                Label nameLabel = new Label(PayStub[0]);
+                Label Days = new Label(PayStub[1]);
+                Label HoursWorkedMonday = new Label(PayStub[2]);
+                Label HoursWorkedSaturday = new Label(PayStub[3]);
+                Label TotalHoursWorked = new Label(PayStub[4]);
+                Label Pay = new Label(PayStub[5]);
+                
+                Button saveButton = new Button("Save PayStub");
+                saveButton.setOnAction(em -> {
+                	 try (PrintWriter writer = new PrintWriter(emp.getName()+" Pay Stub.txt")) {
+                         for (int i=0; i<PayStub.length;i++) {
+                        	 writer.println(PayStub[i]);
+                        	 writer.println("");
+                         }
+                     } catch (IOException ex) {
+                         System.out.println(ex.getMessage());
+                     }
+                		});
+                Button backButton = new Button("Back");
+                backButton.setOnAction(x -> window.setScene(scene2));
+                
+                layout6.getChildren().addAll(
+                    nameLabel,
+                    Days,
+                    HoursWorkedMonday,
+                    HoursWorkedSaturday,
+                    TotalHoursWorked,
+                    Pay,
+                    saveButton,
+                    backButton
+                );
+            	
+            });
+            scene6 = new Scene(layout6, 500, 250);
+            window.setScene(scene6);
+        });
+
         VBox layout2 = new VBox(10);
-        layout2.getChildren().addAll(addEmployeeScene, listEmployeeScene);
-        scene2 = new Scene(layout2, 600,300);
-  
-        
-        
-        //Layout 3
-        
+        layout2.getChildren().addAll(addEmployeeScene, listEmployeeScene, logHoursButton, ViewPayStubButton);
+        scene2 = new Scene(layout2, 600, 300);
+
         Label firstName = new Label("Enter First Name");
         TextField firstNamefield = new TextField();
-
-        Label lastName = new Label("Enter Last name:");
+        Label lastName = new Label("Enter Last Name:");
         TextField lastNamefield = new TextField();
-
         ComboBox<String> position = new ComboBox<>();
         position.getItems().addAll("Manager", "Staff");
         position.setValue("Manager");
-        
         Label username = new Label("Create a username");
         TextField usernameField = new TextField();
-        
         Label passwrd = new Label("Create a password");
         PasswordField passwrdField = new PasswordField();
-        
-        
         Button addEmployee = new Button("Add Employee");
-        
+
         addEmployee.setOnAction(e -> {
-        	String firstname = firstNamefield.getText();
-        	String lastname = lastNamefield.getText();
-        	String Position = position.getValue();
-        	String usrname = usernameField.getText();
-        	String password = passwrdField.getText();
-        	if(firstname.length() > 0 && lastname.length() > 0 && usrname.length() > 0 && password.length() > 0) {
-        		if (user.containsKey(usrname)) {
+            String firstname = firstNamefield.getText();
+            String lastname = lastNamefield.getText();
+            String Position = position.getValue();
+            String usrname = usernameField.getText();
+            String password = passwrdField.getText();
+
+            if (firstname.length() > 0 && lastname.length() > 0 && usrname.length() > 0 && password.length() > 0) {
+                if (user.containsKey(usrname)) {
                     messageLabel.setText("Username already exists. Choose a different username.");
                 } else {
-                	user.put(usrname, password);
+
+                    user.put(usrname, password);
+
                     creator.createEmp(firstname, lastname, usrname, password, Position);
                     messageLabel.setText("Employee added successfully!");
                     window.setScene(scene2);
                 }
-        	} else {
+            } else {
                 messageLabel.setText("Failed to add employee.");
             }
-        	firstNamefield.clear();
-        	lastNamefield.clear();
-        	usernameField.clear();
-        	passwrdField.clear();
-        	
-        	
+
+            firstNamefield.clear();
+            lastNamefield.clear();
+            usernameField.clear();
+            passwrdField.clear();
         });
-        
+
         VBox layout3 = new VBox(10);
         layout3.getChildren().addAll(firstName, firstNamefield, lastName, lastNamefield, position, username, usernameField, passwrd, passwrdField, addEmployee);
         scene3 = new Scene(layout3, 600, 400);
-        
-        
-        
-        
-        //layout 4
-        listView = new ListView<>();
 
+        listView = new ListView<>();
         Label titleLabel = new Label("Employee and Manager Viewer");
 
         Button listEmployeesButton = new Button("List All Employees");
         listEmployeesButton.setOnAction(e -> {
-        	listView.getItems().clear();
-        	List<Employee> combined = new ArrayList<>();
-        	combined.addAll(creator.getEmployees());
-        	//combined.addAll(creator.getManagers());
-        	combined.sort(Comparator.comparing(Employee::getLastName)
-        			.thenComparing(Employee::getFirstName)
-        			.thenComparing(Employee::getDepartment)
-        			.thenComparing(Employee::getID));
-        	for (Employee emp : combined) {
-        		String display = "Name: " + emp.getFirstName() + " " + emp.getLastName() +
-        				(emp instanceof Manager ? " (Manager)" : "") +
-        				", Department: " + emp.getDepartment() +
-        				", ID: " + emp.getID() +
-        				", Username: " + emp.getUsername();
-        		listView.getItems().add(display);
-				}
-			});
+            listView.getItems().clear();
+            List<Employee> combined = creator.getEmployees();
+            combined.sort(Comparator.comparing(Employee::getLastName).thenComparing(Employee::getFirstName).thenComparing(Employee::getDepartment).thenComparing(Employee::getID));
+            for (Employee emp : combined) {
+                String display = "Name: " + emp.getFirstName() + " " + emp.getLastName() + (emp instanceof Manager ? " (Manager)" : "") + ", Department: " + emp.getDepartment() + ", ID: " + emp.getID() + ", Username: " + emp.getUsername();
+                listView.getItems().add(display);
+            }
+        });
 
         Button listManagersButton = new Button("List Managers Only");
         listManagersButton.setOnAction(e -> {
-        	listView.getItems().clear();
+            listView.getItems().clear();
+            List<Manager> managers = creator.getManagers();
+            managers.sort(Comparator.comparing(Manager::getLastName).thenComparing(Manager::getFirstName).thenComparing(Manager::getDepartment).thenComparing(Manager::getID));
+            for (Manager m : managers) {
+                String display = "Name: " + m.getFirstName() + " " + m.getLastName() + " (Manager), Department: " + m.getDepartment() + ", ID: " + m.getID() + ", Username: " + m.getUsername();
+                listView.getItems().add(display);
+            }
+        });
 
-        	List<Manager> managers = creator.getManagers();
-        	managers.sort(Comparator.comparing(Manager::getLastName)
-        			.thenComparing(Manager::getFirstName)
-        			.thenComparing(Manager::getDepartment)
-        			.thenComparing(Manager::getID));
-
-        	for (Manager m : managers) {
-        		String display = "Name: " + m.getFirstName() + " " + m.getLastName() +
-        				" (Manager), Department: " + m.getDepartment() +
-        				", ID: " + m.getID() +
-        				", Username: " + m.getUsername();
-        		listView.getItems().add(display);
-				}
-			});
-        
         Button listByDepartment = new Button("List By Department");
         listByDepartment.setOnAction(e -> {
             listView.getItems().clear();
             ListEmployeesByDepartment departmentLister = new ListEmployeesByDepartment();
-            // Add all employees and managers to the department lister
-            List<Employee> combined = new ArrayList<>();
-            combined.addAll(creator.getEmployees());
-            for (Employee emp : combined) {
-                departmentLister.newEmployee(emp);
-            }
-            // Get the sorted list by department
+            List<Employee> combined = creator.getEmployees();
+            for (Employee emp : combined) departmentLister.newEmployee(emp);
             String[] sortedEmployees = departmentLister.getListEmployeesByDepartment();
-            // Add to listView
-            for (String display : sortedEmployees) {
-                listView.getItems().add(display);
-            }
+            listView.getItems().addAll(sortedEmployees);
         });
+
         Button back = new Button("Back");
         back.setOnAction(e -> {
-        	window.setScene(scene2);
-        	listView.getItems().clear();
+            window.setScene(scene2);
+            listView.getItems().clear();
         });
 
-	    VBox layout4 = new VBox(10);
-	    layout4.getChildren().addAll(titleLabel, listEmployeesButton, listManagersButton, listByDepartment, listView, back);
-	    scene4 = new Scene(layout4, 600, 400);
-
-        
-        
+        VBox layout4 = new VBox(10);
+        layout4.getChildren().addAll(titleLabel, listEmployeesButton, listManagersButton, listByDepartment, listView, back);
+        scene4 = new Scene(layout4, 600, 400);
     }
 
     private void initializeUsers() {
-        user.put("jason", "password234");
-        user.put("manager1", "letmein");
+        user.put("jason", "password");
+    }
+
+    private void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
+    private void showSummary(Employee e) {
+        String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+        StringBuilder summary = new StringBuilder();
+        for (int i = 0; i < 7; i++) {
+            double h = e.getAddHours().getHours(i);
+            if (h > 0) {
+                summary.append(days[i]).append(": ").append(h).append(" hours");
+                if (e.getAddHours().isPTO(i)) summary.append(" (PTO)");
+                summary.append("\n");
+            }
+        }
+        summary.append("Total: ").append(e.getAddHours().getTotalHours()).append(" hours");
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Weekly Summary");
+        alert.setHeaderText("Hours Logged for " + e.getName());
+        alert.setContentText(summary.toString());
+        alert.showAndWait();
     }
 
     public static void main(String[] args) {
         launch(args);
     }
-} 
+}
