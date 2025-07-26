@@ -287,6 +287,7 @@ public class SimpleLoginScreen extends Application {
 
     private void initializeUsers() {
         user.put("jason", "password");
+        user.put("man", "yo");
     }
 
     private void showAlert(String title, String content) {
