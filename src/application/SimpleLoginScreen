@@ -1,13 +1,13 @@
 package application;
 
 import javafx.application.Application;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 
 public class SimpleLoginScreen extends Application {
@@ -45,8 +45,7 @@ public class SimpleLoginScreen extends Application {
             }
         });
 
-        VBox loginLayout = new VBox(10);
-        loginLayout.getChildren().addAll(userLabel, userField, passLabel, passField, loginButton, messageLabel);
+        VBox loginLayout = new VBox(10, userLabel, userField, passLabel, passField, loginButton, messageLabel);
         scene1 = new Scene(loginLayout, 400, 300);
         window.setScene(scene1);
         window.setTitle("Manager Login");
@@ -63,6 +62,9 @@ public class SimpleLoginScreen extends Application {
             ListEmployeeHours.setEmployeeList(creator.getEmployees());
             new ListEmployeeHours().start(new Stage());
         });
+
+        Button importBulkHoursButton = new Button("Add Bulk Hours");
+        importBulkHoursButton.setOnAction(e -> importBulkHours());
 
         Button logHoursButton = new Button("Log Hours for Employee");
         logHoursButton.setOnAction(e -> {
@@ -132,7 +134,11 @@ public class SimpleLoginScreen extends Application {
                 });
 
                 summaryButton.setOnAction(x -> showSummary(emp));
-                layout5.getChildren().addAll(titleLabel, daySelector, hoursField, ptoCheck, submitButton, summaryButton, messageLabel5, ptoBalanceLabel, backButton);
+
+                layout5.getChildren().addAll(
+                    titleLabel, daySelector, hoursField, ptoCheck, submitButton,
+                    summaryButton, messageLabel5, ptoBalanceLabel, backButton
+                );
                 scene5 = new Scene(layout5, 400, 400);
                 window.setScene(scene5);
             });
@@ -182,8 +188,10 @@ public class SimpleLoginScreen extends Application {
             window.setScene(scene6);
         });
 
-        VBox layout2 = new VBox(10);
-        layout2.getChildren().addAll(addEmployeeScene, listEmployeeScene, listEmployeeHoursButton, logHoursButton, viewPayStubButton);
+        VBox layout2 = new VBox(10,
+            addEmployeeScene, listEmployeeScene, listEmployeeHoursButton,
+            importBulkHoursButton, logHoursButton, viewPayStubButton
+        );
         scene2 = new Scene(layout2, 600, 300);
 
         Label firstName = new Label("Enter First Name");
@@ -226,8 +234,10 @@ public class SimpleLoginScreen extends Application {
             passwordField.clear();
         });
 
-        VBox layout3 = new VBox(10);
-        layout3.getChildren().addAll(firstName, firstNameField, lastName, lastNameField, position, username, usernameField, passwordLabel, passwordField, addEmployee);
+        VBox layout3 = new VBox(10,
+            firstName, firstNameField, lastName, lastNameField, position,
+            username, usernameField, passwordLabel, passwordField, addEmployee
+        );
         scene3 = new Scene(layout3, 600, 400);
 
         listView = new ListView<>();
@@ -237,9 +247,16 @@ public class SimpleLoginScreen extends Application {
         listEmployeesButton.setOnAction(e -> {
             listView.getItems().clear();
             List<Employee> combined = creator.getEmployees();
-            combined.sort(Comparator.comparing(Employee::getLastName).thenComparing(Employee::getFirstName).thenComparing(Employee::getDepartment).thenComparing(Employee::getID));
+            combined.sort(Comparator.comparing(Employee::getLastName)
+                .thenComparing(Employee::getFirstName)
+                .thenComparing(Employee::getDepartment)
+                .thenComparing(Employee::getID));
             for (Employee emp : combined) {
-                String display = "Name: " + emp.getFirstName() + " " + emp.getLastName() + (emp instanceof Manager ? " (Manager)" : "") + ", Department: " + emp.getDepartment() + ", ID: " + emp.getID() + ", Username: " + emp.getUsername();
+                String display = "Name: " + emp.getFirstName() + " " + emp.getLastName()
+                    + (emp instanceof Manager ? " (Manager)" : "")
+                    + ", Department: " + emp.getDepartment()
+                    + ", ID: " + emp.getID()
+                    + ", Username: " + emp.getUsername();
                 listView.getItems().add(display);
             }
         });
@@ -248,9 +265,15 @@ public class SimpleLoginScreen extends Application {
         listManagersButton.setOnAction(e -> {
             listView.getItems().clear();
             List<Manager> managers = creator.getManagers();
-            managers.sort(Comparator.comparing(Manager::getLastName).thenComparing(Manager::getFirstName).thenComparing(Manager::getDepartment).thenComparing(Manager::getID));
+            managers.sort(Comparator.comparing(Manager::getLastName)
+                .thenComparing(Manager::getFirstName)
+                .thenComparing(Manager::getDepartment)
+                .thenComparing(Manager::getID));
             for (Manager m : managers) {
-                String display = "Name: " + m.getFirstName() + " " + m.getLastName() + " (Manager), Department: " + m.getDepartment() + ", ID: " + m.getID() + ", Username: " + m.getUsername();
+                String display = "Name: " + m.getFirstName() + " " + m.getLastName()
+                    + " (Manager), Department: " + m.getDepartment()
+                    + ", ID: " + m.getID()
+                    + ", Username: " + m.getUsername();
                 listView.getItems().add(display);
             }
         });
@@ -271,9 +294,96 @@ public class SimpleLoginScreen extends Application {
             listView.getItems().clear();
         });
 
-        VBox layout4 = new VBox(10);
-        layout4.getChildren().addAll(titleLabel, listEmployeesButton, listManagersButton, listByDepartment, listView, back);
+        VBox layout4 = new VBox(10,
+            titleLabel, listEmployeesButton, listManagersButton, listByDepartment, listView, back
+        );
         scene4 = new Scene(layout4, 600, 400);
+    }
+
+    private void importBulkHours() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open CSV File");
+        File file = fileChooser.showOpenDialog(window);
+
+        if (file != null) {
+            int successCount = 0;
+            int failCount = 0;
+
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                List<Employee> allEmployees = creator.getEmployees();
+                Map<Integer, Employee> employeeMap = new HashMap<>();
+                for (Employee emp : allEmployees) {
+                    employeeMap.put(emp.getID(), emp);
+                }
+
+                while ((line = reader.readLine()) != null) {
+                    String[] tokens = line.split(",");
+                    if (tokens.length < 4) {
+                        failCount++;
+                        continue;
+                    }
+
+                    try {
+                        int id = Integer.parseInt(tokens[0].trim());
+                        String day = tokens[1].trim();
+                        double hours = Double.parseDouble(tokens[2].trim());
+                        boolean isPTO = Boolean.parseBoolean(tokens[3].trim());
+
+                        Employee emp = employeeMap.get(id);
+                        if (emp == null) {
+                            failCount++;
+                            continue;
+                        }
+
+                        int dayIndex = getDayIndex(day);
+                        if (dayIndex == -1) {
+                            failCount++;
+                            continue;
+                        }
+
+                        if (emp.getAddHours().getHours(dayIndex) > 0 || emp.getAddHours().isPTO(dayIndex)) {
+                            failCount++;
+                            continue;
+                        }
+
+                        if (isPTO) {
+                            if (hours != 8) {
+                                failCount++;
+                                continue;
+                            }
+                            boolean success = emp.getAddHours().setPTO(dayIndex, emp.getPTO());
+                            if (success) successCount++;
+                            else failCount++;
+                        } else {
+                            emp.getAddHours().setHours(dayIndex, hours);
+                            successCount++;
+                        }
+
+                    } catch (Exception ex) {
+                        failCount++;
+                    }
+                }
+
+                showAlert("Import Complete", "Successfully logged hours: " + successCount + "\nFailed entries: " + failCount);
+
+            } catch (IOException ex) {
+                showAlert("Error", "Failed to read file: " + ex.getMessage());
+            }
+        }
+    }
+
+    private int getDayIndex(String day) {
+        switch (day.toLowerCase()) {
+            case "monday": return 0;
+            case "tuesday": return 1;
+            case "wednesday": return 2;
+            case "thursday": return 3;
+            case "friday": return 4;
+            case "saturday": return 5;
+            case "sunday": return 6;
+            default: return -1;
+        }
     }
 
     private void initializeUsers() {
@@ -282,7 +392,7 @@ public class SimpleLoginScreen extends Application {
     }
 
     private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);
