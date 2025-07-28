@@ -20,7 +20,6 @@ public class SimpleLoginScreen extends Application {
     PTO currentPTO = new PTO(40);
     Employee selectedEmployee;
     ViewPayStub viewPayStub = new ViewPayStub();
-
     private Map<String, String> user = new HashMap<>();
 
     @Override
@@ -38,7 +37,6 @@ public class SimpleLoginScreen extends Application {
         loginButton.setOnAction(e -> {
             String username = userField.getText();
             String password = passField.getText();
-
             if (user.containsKey(username) && user.get(username).equals(password)) {
                 messageLabel.setText("Login successful!");
                 window.setScene(scene2);
@@ -59,6 +57,12 @@ public class SimpleLoginScreen extends Application {
 
         Button listEmployeeScene = new Button("List Employee");
         listEmployeeScene.setOnAction(e -> window.setScene(scene4));
+
+        Button listEmployeeHoursButton = new Button("List All Employee Hours");
+        listEmployeeHoursButton.setOnAction(e -> {
+            ListEmployeeHours.setEmployeeList(creator.getEmployees());
+            new ListEmployeeHours().start(new Stage());
+        });
 
         Button logHoursButton = new Button("Log Hours for Employee");
         logHoursButton.setOnAction(e -> {
@@ -84,7 +88,6 @@ public class SimpleLoginScreen extends Application {
                 hoursField.setPromptText("Enter number of hours");
 
                 CheckBox ptoCheck = new CheckBox("Is this PTO?");
-
                 Button submitButton = new Button("Submit Hours");
                 Label ptoBalanceLabel = new Label("PTO Balance: " + emp.getPTO().getRemainingPTOHours() + " hours");
                 Label messageLabel5 = new Label();
@@ -118,7 +121,7 @@ public class SimpleLoginScreen extends Application {
                             boolean ptoSet = emp.getAddHours().setPTO(dayIndex, emp.getPTO());
                             messageLabel5.setText(ptoSet ? "PTO recorded." : "PTO not allowed or already used.");
                         } else {
-                        	emp.getAddHours().setHours(dayIndex, hours);
+                            emp.getAddHours().setHours(dayIndex, hours);
                             messageLabel5.setText("Regular hours recorded.");
                         }
 
@@ -128,100 +131,88 @@ public class SimpleLoginScreen extends Application {
                     }
                 });
 
-                summaryButton.setOnAction(x -> {
-                showSummary(emp);});
-
+                summaryButton.setOnAction(x -> showSummary(emp));
                 layout5.getChildren().addAll(titleLabel, daySelector, hoursField, ptoCheck, submitButton, summaryButton, messageLabel5, ptoBalanceLabel, backButton);
                 scene5 = new Scene(layout5, 400, 400);
                 window.setScene(scene5);
             });
         });
-        Button ViewPayStubButton = new Button("View Employee Pay Stub");
-        ViewPayStubButton.setOnAction(e -> {
 
-    		VBox layout6 = new VBox(10);
+        Button viewPayStubButton = new Button("View Employee Pay Stub");
+        viewPayStubButton.setOnAction(e -> {
+            VBox layout6 = new VBox(10);
             List<Employee> employees = creator.getEmployees();
             if (employees.isEmpty()) {
                 showAlert("No Employees", "No employee pay stubs available.");
                 return;
             }
-            
+
             ChoiceDialog<Employee> dialog = new ChoiceDialog<>(employees.get(0), employees);
             dialog.setTitle("Select Employee");
             dialog.setHeaderText("Choose an employee to log hours for:");
             dialog.setContentText("Employee:");
 
             dialog.showAndWait().ifPresent(emp -> {
-            	String[] PayStub = viewPayStub.PayStub(emp, emp.getAddHours(), emp.getPTO());
-                Label nameLabel = new Label(PayStub[0]);
-                Label Days = new Label(PayStub[1]);
-                Label HoursWorkedMonday = new Label(PayStub[2]);
-                Label HoursWorkedSaturday = new Label(PayStub[3]);
-                Label TotalHoursWorked = new Label(PayStub[4]);
-                Label Pay = new Label(PayStub[5]);
-                
+                String[] payStub = viewPayStub.PayStub(emp, emp.getAddHours(), emp.getPTO());
+                Label nameLabel = new Label(payStub[0]);
+                Label days = new Label(payStub[1]);
+                Label mondayHours = new Label(payStub[2]);
+                Label saturdayHours = new Label(payStub[3]);
+                Label totalHours = new Label(payStub[4]);
+                Label pay = new Label(payStub[5]);
+
                 Button saveButton = new Button("Save PayStub");
-                saveButton.setOnAction(em -> {
-                	 try (PrintWriter writer = new PrintWriter(emp.getName()+" Pay Stub.txt")) {
-                         for (int i=0; i<PayStub.length;i++) {
-                        	 writer.println(PayStub[i]);
-                        	 writer.println("");
-                         }
-                     } catch (IOException ex) {
-                         System.out.println(ex.getMessage());
-                     }
-                		});
+                saveButton.setOnAction(em2 -> {
+                    try (PrintWriter writer = new PrintWriter(emp.getName() + " Pay Stub.txt")) {
+                        for (String line : payStub) {
+                            writer.println(line);
+                            writer.println();
+                        }
+                    } catch (IOException ex) {
+                        System.out.println(ex.getMessage());
+                    }
+                });
+
                 Button backButton = new Button("Back");
                 backButton.setOnAction(x -> window.setScene(scene2));
-                
-                layout6.getChildren().addAll(
-                    nameLabel,
-                    Days,
-                    HoursWorkedMonday,
-                    HoursWorkedSaturday,
-                    TotalHoursWorked,
-                    Pay,
-                    saveButton,
-                    backButton
-                );
-            	
+                layout6.getChildren().addAll(nameLabel, days, mondayHours, saturdayHours, totalHours, pay, saveButton, backButton);
             });
+
             scene6 = new Scene(layout6, 500, 250);
             window.setScene(scene6);
         });
 
         VBox layout2 = new VBox(10);
-        layout2.getChildren().addAll(addEmployeeScene, listEmployeeScene, logHoursButton, ViewPayStubButton);
+        layout2.getChildren().addAll(addEmployeeScene, listEmployeeScene, listEmployeeHoursButton, logHoursButton, viewPayStubButton);
         scene2 = new Scene(layout2, 600, 300);
 
         Label firstName = new Label("Enter First Name");
-        TextField firstNamefield = new TextField();
+        TextField firstNameField = new TextField();
         Label lastName = new Label("Enter Last Name:");
-        TextField lastNamefield = new TextField();
+        TextField lastNameField = new TextField();
         ComboBox<String> position = new ComboBox<>();
         position.getItems().addAll("Manager", "Staff");
         position.setValue("Manager");
+
         Label username = new Label("Create a username");
         TextField usernameField = new TextField();
-        Label passwrd = new Label("Create a password");
-        PasswordField passwrdField = new PasswordField();
+        Label passwordLabel = new Label("Create a password");
+        PasswordField passwordField = new PasswordField();
         Button addEmployee = new Button("Add Employee");
 
         addEmployee.setOnAction(e -> {
-            String firstname = firstNamefield.getText();
-            String lastname = lastNamefield.getText();
-            String Position = position.getValue();
+            String firstname = firstNameField.getText();
+            String lastname = lastNameField.getText();
+            String positionValue = position.getValue();
             String usrname = usernameField.getText();
-            String password = passwrdField.getText();
+            String password = passwordField.getText();
 
-            if (firstname.length() > 0 && lastname.length() > 0 && usrname.length() > 0 && password.length() > 0) {
+            if (!firstname.isEmpty() && !lastname.isEmpty() && !usrname.isEmpty() && !password.isEmpty()) {
                 if (user.containsKey(usrname)) {
                     messageLabel.setText("Username already exists. Choose a different username.");
                 } else {
-
                     user.put(usrname, password);
-
-                    creator.createEmp(firstname, lastname, usrname, password, Position);
+                    creator.createEmp(firstname, lastname, usrname, password, positionValue);
                     messageLabel.setText("Employee added successfully!");
                     window.setScene(scene2);
                 }
@@ -229,14 +220,14 @@ public class SimpleLoginScreen extends Application {
                 messageLabel.setText("Failed to add employee.");
             }
 
-            firstNamefield.clear();
-            lastNamefield.clear();
+            firstNameField.clear();
+            lastNameField.clear();
             usernameField.clear();
-            passwrdField.clear();
+            passwordField.clear();
         });
 
         VBox layout3 = new VBox(10);
-        layout3.getChildren().addAll(firstName, firstNamefield, lastName, lastNamefield, position, username, usernameField, passwrd, passwrdField, addEmployee);
+        layout3.getChildren().addAll(firstName, firstNameField, lastName, lastNameField, position, username, usernameField, passwordLabel, passwordField, addEmployee);
         scene3 = new Scene(layout3, 600, 400);
 
         listView = new ListView<>();
