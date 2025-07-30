@@ -68,6 +68,12 @@ public class Employee {
         return UserName;
     }
 
+    
+    public String getPassword() {
+		return Password;
+		
+	}
+
     public PTO getPTO() {
         return this.pto;
     }

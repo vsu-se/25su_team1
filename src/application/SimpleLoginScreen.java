@@ -1,11 +1,16 @@
 package application;
 
 import javafx.application.Application;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+import java.io.*;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
@@ -32,6 +37,9 @@ public class SimpleLoginScreen extends Application {
         Label passLabel = new Label("Password:");
         PasswordField passField = new PasswordField();
         Button loginButton = new Button("Login");
+
+        Button employeeLoginButton = new Button("Employee Login");
+
         Label messageLabel = new Label();
 
         loginButton.setOnAction(e -> {
@@ -45,6 +53,14 @@ public class SimpleLoginScreen extends Application {
             }
         });
 
+        employeeLoginButton.setOnAction(e -> {
+            new EmployeeLogin().start(new Stage());
+        });
+
+        VBox loginLayout = new VBox(10);
+        loginLayout.getChildren().addAll(userLabel, userField, passLabel, passField, loginButton, employeeLoginButton, messageLabel);
+        scene1 = new Scene(loginLayout, 400, 300);
+        scene1.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
         VBox loginLayout = new VBox(10);
         loginLayout.getChildren().addAll(userLabel, userField, passLabel, passField, loginButton, messageLabel);
         scene1 = new Scene(loginLayout, 400, 300);
@@ -63,7 +79,8 @@ public class SimpleLoginScreen extends Application {
             ListEmployeeHours.setEmployeeList(creator.getEmployees());
             new ListEmployeeHours().start(new Stage());
         });
-
+        Button importBulkHoursButton = new Button("Add Bulk Hours");
+        importBulkHoursButton.setOnAction(e -> importBulkHours());
         Button logHoursButton = new Button("Log Hours for Employee");
         logHoursButton.setOnAction(e -> {
             List<Employee> employees = creator.getEmployees();
@@ -104,12 +121,10 @@ public class SimpleLoginScreen extends Application {
                         messageLabel5.setText("Please select a day and enter hours.");
                         return;
                     }
-
                     if (emp.getAddHours().getHours(dayIndex) > 0 || emp.getAddHours().isPTO(dayIndex)) {
                         messageLabel5.setText("Hours already recorded for this day.");
                         return;
                     }
-
                     try {
                         double hours = Double.parseDouble(hoursText);
 
@@ -179,6 +194,28 @@ public class SimpleLoginScreen extends Application {
             });
 
             scene6 = new Scene(layout6, 500, 250);
+
+            scene6.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+            window.setScene(scene6);
+        });
+
+        Button logoutButton = new Button("Logout");
+        logoutButton.setOnAction(e -> window.setScene(scene1));
+
+        VBox layout2 = new VBox(10);
+        layout2.getChildren().addAll(
+            addEmployeeScene,
+            listEmployeeScene,
+            listEmployeeHoursButton,
+            importBulkHoursButton,
+            logHoursButton,
+            viewPayStubButton,
+            logoutButton
+        );
+        scene2 = new Scene(layout2, 600, 300);
+        scene2.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+
+        
             window.setScene(scene6);
         });
 
@@ -229,6 +266,8 @@ public class SimpleLoginScreen extends Application {
         VBox layout3 = new VBox(10);
         layout3.getChildren().addAll(firstName, firstNameField, lastName, lastNameField, position, username, usernameField, passwordLabel, passwordField, addEmployee);
         scene3 = new Scene(layout3, 600, 400);
+        scene3.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+
 
         listView = new ListView<>();
         Label titleLabel = new Label("Employee and Manager Viewer");
@@ -274,6 +313,94 @@ public class SimpleLoginScreen extends Application {
         VBox layout4 = new VBox(10);
         layout4.getChildren().addAll(titleLabel, listEmployeesButton, listManagersButton, listByDepartment, listView, back);
         scene4 = new Scene(layout4, 600, 400);
+        scene4.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+    }
+
+
+    private void importBulkHours() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open CSV File");
+        File file = fileChooser.showOpenDialog(window);
+
+        if (file != null) {
+            int successCount = 0;
+            int failCount = 0;
+
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                List<Employee> allEmployees = creator.getEmployees();
+                Map<Integer, Employee> employeeMap = new HashMap<>();
+                for (Employee emp : allEmployees) {
+                    employeeMap.put(emp.getID(), emp);
+                }
+
+                while ((line = reader.readLine()) != null) {
+                    String[] tokens = line.split(",");
+                    if (tokens.length < 4) {
+                        failCount++;
+                        continue;
+                    }
+
+                    try {
+                        int id = Integer.parseInt(tokens[0].trim());
+                        String day = tokens[1].trim();
+                        double hours = Double.parseDouble(tokens[2].trim());
+                        boolean isPTO = Boolean.parseBoolean(tokens[3].trim());
+
+                        Employee emp = employeeMap.get(id);
+                        if (emp == null) {
+                            failCount++;
+                            continue;
+                        }
+
+                        int dayIndex = getDayIndex(day);
+                        if (dayIndex == -1) {
+                            failCount++;
+                            continue;
+                        }
+
+                        if (emp.getAddHours().getHours(dayIndex) > 0 || emp.getAddHours().isPTO(dayIndex)) {
+                            failCount++;
+                            continue;
+                        }
+
+                        if (isPTO) {
+                            if (hours != 8) {
+                                failCount++;
+                                continue;
+                            }
+                            boolean success = emp.getAddHours().setPTO(dayIndex, emp.getPTO());
+                            if (success) successCount++;
+                            else failCount++;
+                        } else {
+                            emp.getAddHours().setHours(dayIndex, hours);
+                            successCount++;
+                        }
+
+                    } catch (Exception ex) {
+                        failCount++;
+                    }
+                }
+
+                showAlert("Import Complete", "Successfully logged hours: " + successCount + "\nFailed entries: " + failCount);
+
+            } catch (IOException ex) {
+                showAlert("Error", "Failed to read file: " + ex.getMessage());
+            }
+        }
+    }
+
+    private int getDayIndex(String day) {
+        switch (day.toLowerCase()) {
+            case "monday": return 0;
+            case "tuesday": return 1;
+            case "wednesday": return 2;
+            case "thursday": return 3;
+            case "friday": return 4;
+            case "saturday": return 5;
+            case "sunday": return 6;
+            default: return -1;
+        }
     }
 
     private void initializeUsers() {
@@ -282,7 +409,10 @@ public class SimpleLoginScreen extends Application {
     }
 
     private void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
         Alert alert = new Alert(Alert.AlertType.WARNING);
+
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);
