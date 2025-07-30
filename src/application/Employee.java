@@ -59,6 +59,10 @@ public class Employee {
     public int getID() {
         return this.ID;
     }
+    
+    public void setID(int ID) {
+        this.ID = ID;
+    }
 
     public String getName() {
         return this.FirstName + " " + this.LastName;
@@ -67,11 +71,9 @@ public class Employee {
     public String getUsername() {
         return UserName;
     }
-    
     public String getPassword() {
-		return Password;
-		
-	}
+    	return Password;
+    }
 
     public PTO getPTO() {
         return this.pto;
@@ -79,6 +81,10 @@ public class Employee {
 
     public AddHours getAddHours() {
         return this.addHours;
+    }
+    
+    public void setAddHours(AddHours AH) {
+    	this.addHours = AH;
     }
     
     public double getPayRate() {
@@ -94,6 +100,4 @@ public class Employee {
     public String toString() {
         return getFirstName() + " " + getLastName() + " (ID: " + getID() + ")";
     }
-
-	
 }
