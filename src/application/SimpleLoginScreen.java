@@ -6,8 +6,13 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-
 import java.io.*;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 public class SimpleLoginScreen extends Application {
@@ -32,7 +37,9 @@ public class SimpleLoginScreen extends Application {
         Label passLabel = new Label("Password:");
         PasswordField passField = new PasswordField();
         Button loginButton = new Button("Login");
+
         Button employeeLoginButton = new Button("Employee Login");
+
         Label messageLabel = new Label();
 
         loginButton.setOnAction(e -> {
@@ -54,6 +61,9 @@ public class SimpleLoginScreen extends Application {
         loginLayout.getChildren().addAll(userLabel, userField, passLabel, passField, loginButton, employeeLoginButton, messageLabel);
         scene1 = new Scene(loginLayout, 400, 300);
         scene1.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+        VBox loginLayout = new VBox(10);
+        loginLayout.getChildren().addAll(userLabel, userField, passLabel, passField, loginButton, messageLabel);
+        scene1 = new Scene(loginLayout, 400, 300);
         window.setScene(scene1);
         window.setTitle("Manager Login");
         window.show();
@@ -69,10 +79,8 @@ public class SimpleLoginScreen extends Application {
             ListEmployeeHours.setEmployeeList(creator.getEmployees());
             new ListEmployeeHours().start(new Stage());
         });
-
         Button importBulkHoursButton = new Button("Add Bulk Hours");
         importBulkHoursButton.setOnAction(e -> importBulkHours());
-
         Button logHoursButton = new Button("Log Hours for Employee");
         logHoursButton.setOnAction(e -> {
             List<Employee> employees = creator.getEmployees();
@@ -113,7 +121,10 @@ public class SimpleLoginScreen extends Application {
                         messageLabel5.setText("Please select a day and enter hours.");
                         return;
                     }
-
+                    if (emp.getAddHours().getHours(dayIndex) > 0 || emp.getAddHours().isPTO(dayIndex)) {
+                        messageLabel5.setText("Hours already recorded for this day.");
+                        return;
+                    }
                     try {
                         double hours = Double.parseDouble(hoursText);
 
@@ -183,6 +194,7 @@ public class SimpleLoginScreen extends Application {
             });
 
             scene6 = new Scene(layout6, 500, 250);
+
             scene6.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
             window.setScene(scene6);
         });
@@ -204,6 +216,13 @@ public class SimpleLoginScreen extends Application {
         scene2.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 
         
+            window.setScene(scene6);
+        });
+
+        VBox layout2 = new VBox(10);
+        layout2.getChildren().addAll(addEmployeeScene, listEmployeeScene, listEmployeeHoursButton, logHoursButton, viewPayStubButton);
+        scene2 = new Scene(layout2, 600, 300);
+
         Label firstName = new Label("Enter First Name");
         TextField firstNameField = new TextField();
         Label lastName = new Label("Enter Last Name:");
@@ -248,6 +267,7 @@ public class SimpleLoginScreen extends Application {
         layout3.getChildren().addAll(firstName, firstNameField, lastName, lastNameField, position, username, usernameField, passwordLabel, passwordField, addEmployee);
         scene3 = new Scene(layout3, 600, 400);
         scene3.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+
 
         listView = new ListView<>();
         Label titleLabel = new Label("Employee and Manager Viewer");
@@ -390,6 +410,9 @@ public class SimpleLoginScreen extends Application {
 
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);

@@ -67,6 +67,7 @@ public class Employee {
     public String getUsername() {
         return UserName;
     }
+
     
     public String getPassword() {
 		return Password;
@@ -94,6 +95,4 @@ public class Employee {
     public String toString() {
         return getFirstName() + " " + getLastName() + " (ID: " + getID() + ")";
     }
-
-	
 }
