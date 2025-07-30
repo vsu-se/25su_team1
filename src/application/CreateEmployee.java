@@ -22,7 +22,30 @@ public class CreateEmployee {
                 break;
         }
     }
+    
+    public void createEmp(String firstname, String lastname, String UserName, String Password, String position, int ID){
 
+        switch (position) {
+        	case "Manager":
+        		Manager manager = new Manager(firstname, lastname, UserName, Password);
+        		manager.setID(ID);
+        		currentManagersList.add(manager);
+        		currentEmployeeList.add(manager);
+        		
+                break;
+            case "Staff":
+            	Employee E = new Employee(firstname, lastname, UserName, Password, "Staff");
+            	E.setID(ID);
+                currentEmployeeList.add(E);
+                break;
+            default:
+            	System.out.println("Invalid Answer");
+                break;
+                }
+     
+
+    }
+    
     public List<Employee> getEmployees() {
         return new ArrayList<>(currentEmployeeList);
     }
@@ -30,4 +53,5 @@ public class CreateEmployee {
     public List<Manager> getManagers() {
         return new ArrayList<>(currentManagersList);
     }
-}
+}    
+
