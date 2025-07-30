@@ -4,17 +4,12 @@ public class AddHours {
     private double[] hours = new double[7];
     private boolean[] isPTO = new boolean[7];
 
-
     public void setHours(int day, double hours) {
         if (day >= 0 && day < 7 && !isPTO[day]) {
             this.hours[day] = hours;
         }
     }
 
-
-    
-
- 
     public double getHours(int day) {
         if (day >= 0 && day < 7) {
             return hours[day];
@@ -33,6 +28,7 @@ public class AddHours {
         }
         return false;
     }
+
     public boolean isPTO(int day) {
         if (day >= 0 && day < 7) {
             return isPTO[day];
@@ -92,29 +88,3 @@ public class AddHours {
         return true;
     }
 }
-
-     public double getWeekendHours() {
-        return hours[5] + hours[6];
-    }
-}
-
-
-
-class PTO {
-    private int remainingPTOHours;
-
-    public PTO(int startingPTOHours) {
-        this.remainingPTOHours = startingPTOHours;
-    }
-
-    public int getRemainingPTOHours() {
-        return remainingPTOHours;
-    }
-
-    public void usePTO(int hours) {
-        if (hours > 0 && remainingPTOHours >= hours) {
-            remainingPTOHours -= hours;
-        }
-    }
-}
-
