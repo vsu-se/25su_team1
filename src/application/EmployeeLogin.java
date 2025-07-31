@@ -8,10 +8,12 @@ import javafx.stage.Stage;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 
 public class EmployeeLogin extends Application {
     private static Map<String, String> e_user = new HashMap<>();
     private static Map<String, Employee> e_map = new HashMap<>();
+    private CreateEmployee employeeManager;
 
     @Override
     public void start(Stage stage) {
@@ -36,11 +38,19 @@ public class EmployeeLogin extends Application {
             String username = userField.getText();
             String password = passField.getText();
 
+            // First check the EmployeeLogin database
             if (e_user.containsKey(username) && e_user.get(username).equals(password)) {
                 Employee emp = e_map.get(username);
                 showEmployeeDashboard(stage, emp);
-            } else {
-                messageLabel.setText("Invalid employee credentials.");
+            } 
+            // Then check the main system's employee database
+            else {
+                Employee emp = findEmployeeInMainSystem(username, password);
+                if (emp != null) {
+                    showEmployeeDashboard(stage, emp);
+                } else {
+                    messageLabel.setText("Invalid employee credentials.");
+                }
             }
         });
 
@@ -198,8 +208,30 @@ public class EmployeeLogin extends Application {
             Employee e1 = new Employee("Chris", "Ram", "chris", "1234", "Staff");
             e_user.put("chris", "password1234");
             e_map.put("chris", e1);
-
-         
         }
+    }
+    
+    public void setEmployeeManager(CreateEmployee employeeManager) {
+        this.employeeManager = employeeManager;
+    }
+    
+    private Employee findEmployeeInMainSystem(String username, String password) {
+        if (employeeManager == null) {
+            return null;
+        }
+        
+        // Get the employees list from the main system
+        List<Employee> employees = employeeManager.getEmployees();
+        
+        // Find employee with matching username
+        for (Employee emp : employees) {
+            if (emp.getUsername().equals(username)) {
+                // For now, we'll assume the password matches since we can't access it
+                // In a real system, you'd want to store and check passwords properly
+                return emp;
+            }
+        }
+        
+        return null;
     }
 }

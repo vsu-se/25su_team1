@@ -82,6 +82,10 @@ public class Employee {
         return this.addHours;
     }
     
+    public void setAddHours(AddHours addHours) {
+        this.addHours = addHours;
+    }
+    
     public double getPayRate() {
     	return this.PayRate;
     }
@@ -90,6 +94,34 @@ public class Employee {
     	return this.TaxRate;
     }
     
+    // Setter methods for editing employee information
+    public void setFirstName(String firstName) {
+        this.FirstName = firstName;
+    }
+    
+    public void setLastName(String lastName) {
+        this.LastName = lastName;
+    }
+    
+    public void setUsername(String username) {
+        this.UserName = username;
+    }
+    
+    public void setPassword(String password) {
+        this.Password = password;
+    }
+    
+    public void setDepartment(String department) {
+        this.Department = department;
+    }
+    
+    public void setPayRate(double payRate) {
+        this.PayRate = payRate;
+    }
+    
+    public void setTaxRate(double taxRate) {
+        this.TaxRate = taxRate;
+    }
 
     @Override
     public String toString() {

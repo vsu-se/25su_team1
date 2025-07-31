@@ -40,6 +40,13 @@ public class AddHours {
         return false;
     }
 
+    public void clearPTO(int day) {
+        if (day >= 0 && day < 7 && isPTO[day]) {
+            isPTO[day] = false;
+            // Note: PTO refund would need to be handled by the calling method
+        }
+    }
+
     public int getNumDaysWorked() {
         int count = 0;
         for (int i = 0; i < hours.length; i++) {
@@ -92,29 +99,4 @@ public class AddHours {
         return true;
     }
 }
-
-     public double getWeekendHours() {
-        return hours[5] + hours[6];
-    }
-}
-
-
-
-class PTO {
-    private int remainingPTOHours;
-
-    public PTO(int startingPTOHours) {
-        this.remainingPTOHours = startingPTOHours;
-    }
-
-    public int getRemainingPTOHours() {
-        return remainingPTOHours;
-    }
-
-    public void usePTO(int hours) {
-        if (hours > 0 && remainingPTOHours >= hours) {
-            remainingPTOHours -= hours;
-        }
-    }
-}
-
+    

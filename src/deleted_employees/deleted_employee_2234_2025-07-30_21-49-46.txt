@@ -1,0 +1,22 @@
+DELETED EMPLOYEE ARCHIVE - 2025-07-30_21-49-46
+=====================================
+Employee ID: 2234
+Name: Chris Ramos
+Username: Cssssss
+Department: Staff
+Position: Staff
+Pay Rate: $1.0/hour
+Tax Rate: 0.4%
+PTO Remaining: 40 hours
+
+Weekly Hours at Time of Deletion:
+  Tuesday: 12.0 hours
+
+Summary:
+  Total Hours: 12.0
+  Weekday Hours: 12.0
+  Weekend Hours: 0.0
+  Days Worked: 1
+
+Deletion Date: 2025-07-30_21-49-46
+Reason: Employee deleted from system

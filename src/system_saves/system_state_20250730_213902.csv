@@ -1,0 +1,2 @@
+EmployeeID,FirstName,LastName,Username,Password,Department,Position,PayRate,TaxRate,PTOBalance,MondayHours,MondayPTO,TuesdayHours,TuesdayPTO,WednesdayHours,WednesdayPTO,ThursdayHours,ThursdayPTO,FridayHours,FridayPTO,SaturdayHours,SaturdayPTO,SundayHours,SundayPTO,TotalRegularHours,TotalPTOHours,TotalHours
+2234,Chris,Ramos,C,,Staff,Staff,15.00,0.40,40,0.0,Regular,0.0,Regular,0.0,Regular,0.0,Regular,0.0,Regular,0.0,Regular,0.0,Regular,0.0,0.0,0.0

@@ -9,4 +9,11 @@
 /AddHoursGui.class
 /ListEmployeeHours.class
 /PTO.class
-/EmployeeLogin
+/ArchivedDataViewer.class
+/EmployeeLogin.class
+/NewWeek.class
+/SavingSystemData.class
+/SavingSystemData$1.class
+/SaveStateViewer.class
+/EmployeeManager.class
+/EditDailyEntry.class
