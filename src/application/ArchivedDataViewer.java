@@ -1,0 +1,47 @@
+package application;
+
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+
+import java.io.File;
+import java.nio.file.Files;
+
+public class ArchivedDataViewer
+
+{
+    public static void viewArchivedFile(Stage parentStage) 
+{
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Select Archived Week File");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+
+        File selectedFile = chooser.showOpenDialog(parentStage);
+        if (selectedFile != null) 
+{
+            try {
+                String content = new String(Files.readAllBytes(selectedFile.toPath()));
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Archived Week Data");
+                alert.setHeaderText("Data from " + selectedFile.getName());
+                alert.setContentText(content);
+                alert.getDialogPane().setPrefWidth(500);
+                alert.showAndWait();
+            } catch (Exception e) {
+                
+              showError("Failed to load file: " + e.getMessage());
+
+            }
+        }
+    }
+
+    private static void showError(String msg)
+
+    {
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setContentText(msg);
+        alert.showAndWait();
+    }
+}

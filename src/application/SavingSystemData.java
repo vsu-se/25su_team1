@@ -1,0 +1,36 @@
+package application;
+
+import java.io.PrintWriter;
+import java.io.IOException;
+import java.util.List;
+
+public class SavingSystemData 
+
+{
+
+    public void saveSystemState(List<Employee> employees) {
+        try (PrintWriter writer = new PrintWriter("SystemState")) {
+            for (Employee emp : employees) 
+
+{
+                writer.println("Employee Information:");
+                writer.println("Name: " + emp.getName());
+                writer.println("Username: " + emp.getUsername());
+                writer.println("Password: " + emp.getPassword());
+                writer.println("Department: " + emp.getDepartment());
+                writer.println("ID: " + emp.getID());
+                writer.println("PTO Remaining: " + emp.getPTO().getRemainingPTOHours());
+                writer.println("Logged Hours:");
+                for (int i = 0; i < 7; i++){
+
+                    writer.println("  Day " + i + ": " + emp.getAddHours().getHours(i) +
+                            (emp.getAddHours().isPTO(i) ? " (PTO)" : ""));
+                }
+
+                writer.println("-----");
+            }
+        }   catch (IOException e) {
+            System.out.println("Error saving system state: " + e.getMessage());
+        }
+    }
+}
