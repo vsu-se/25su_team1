@@ -73,6 +73,7 @@ public class AddHours {
         return hours[5] + hours[6];
     }
 }
+<<<<<<< Updated upstream
 
 
 
@@ -94,3 +95,5 @@ class PTO {
         }
     }
 }
+=======
+>>>>>>> Stashed changes

@@ -31,6 +31,21 @@ public class CreateEmployee {
 
     public List<Manager> getManagers() {
         return new ArrayList<>(currentManagersList); // Return a copy to prevent external modification
+<<<<<<< Updated upstream
+=======
+    }
+    
+    public void clearEmployees() {
+        currentEmployeeList.clear();
+        currentManagersList.clear();
+    }
+    
+    public void addEmployee(Employee employee) {
+        currentEmployeeList.add(employee);
+        if (employee instanceof Manager) {
+            currentManagersList.add((Manager) employee);
+        }
+>>>>>>> Stashed changes
     }
 }
     

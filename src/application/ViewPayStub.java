@@ -51,7 +51,7 @@ public class ViewPayStub extends Application{
 	public Double getPay(Employee e, AddHours addHours) {
 
 		Double Pay = 0.0;
-		Double PayRate = 15.0;
+		Double PayRate = e.getPayRate();
 		
 		if (e.getDepartment() == "Manager") {
 			return 40 * PayRate;
