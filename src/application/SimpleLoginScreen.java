@@ -24,6 +24,7 @@ public class SimpleLoginScreen extends Application {
     private CreateEmployee employeeManager;
     private ListView<String> employeeListView;
     private ViewPayStub payStubViewer;
+    private EditDailyEntry editDailyEntry;
     
     private Map<String, String> userCredentials;
     private Employee selectedEmployeeForHours;
@@ -33,7 +34,11 @@ public class SimpleLoginScreen extends Application {
         this.primaryWindow = primaryStage;
         this.employeeManager = new CreateEmployee();
         this.payStubViewer = new ViewPayStub();
+        this.editDailyEntry = new EditDailyEntry();
         this.userCredentials = new HashMap<>();
+        
+        // Load existing audit records
+        editDailyEntry.loadRecords();
         
         initializeUserCredentials();
         setupLoginScene();
@@ -103,6 +108,8 @@ public class SimpleLoginScreen extends Application {
         Button restoreSaveStateButton = createRestoreSaveStateButton();
         Button editEmployeeButton = createEditEmployeeButton();
         Button deleteEmployeeButton = createDeleteEmployeeButton();
+        Button editDailyEntryButton = createEditDailyEntryButton();
+        Button viewAuditTrailButton = createViewAuditTrailButton();
         Button logoutButton = createLogoutButton();
 
         // Create two columns for better organization
@@ -118,7 +125,7 @@ public class SimpleLoginScreen extends Application {
         // Right column buttons
         rightColumn.getChildren().addAll(
             viewArchivedDataButton, saveSystemButton, restoreSaveStateButton, 
-            editEmployeeButton, deleteEmployeeButton
+            editEmployeeButton, deleteEmployeeButton, editDailyEntryButton, viewAuditTrailButton
         );
         
         // Create horizontal layout for the two columns
@@ -217,6 +224,18 @@ public class SimpleLoginScreen extends Application {
             EmployeeManager.showEmployeeSelectionDialog(primaryWindow, employees, "Delete", employeeManager, 
                 () -> refreshEmployeeList());
         });
+        return button;
+    }
+
+    private Button createEditDailyEntryButton() {
+        Button button = new Button("Edit Daily Entry");
+        button.setOnAction(event -> openEditDailyEntryDialog());
+        return button;
+    }
+
+    private Button createViewAuditTrailButton() {
+        Button button = new Button("View Audit Trail");
+        button.setOnAction(event -> openAuditTrailDialog());
         return button;
     }
 
@@ -881,6 +900,180 @@ public class SimpleLoginScreen extends Application {
             }
         }
         return -1;
+    }
+
+    private void openEditDailyEntryDialog() {
+        List<Employee> employees = employeeManager.getEmployees();
+        if (employees.isEmpty()) {
+            showAlert("No Employees", "No employees available to edit hours for.");
+            return;
+        }
+
+        ChoiceDialog<Employee> employeeDialog = new ChoiceDialog<>(employees.get(0), employees);
+        employeeDialog.setTitle("Select Employee");
+        employeeDialog.setHeaderText("Choose an employee to edit hours for:");
+        employeeDialog.setContentText("Employee:");
+
+        employeeDialog.showAndWait().ifPresent(employee -> {
+            showEditDailyEntryDialog(employee);
+        });
+    }
+
+    private void showEditDailyEntryDialog(Employee employee) {
+        Stage editStage = new Stage();
+        VBox layout = new VBox(10);
+        
+        Label titleLabel = new Label("Edit Daily Entry for " + employee.getName());
+        ComboBox<String> daySelector = new ComboBox<>();
+        daySelector.getItems().addAll("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
+        
+        TextField hoursField = new TextField();
+        hoursField.setPromptText("Enter new hours");
+        
+        CheckBox ptoCheckBox = new CheckBox("Mark as PTO");
+        Label currentHoursLabel = new Label();
+        Label messageLabel = new Label();
+        
+        Button updateButton = new Button("Update Entry");
+        Button cancelButton = new Button("Cancel");
+        
+        // Update current hours display when day is selected
+        daySelector.setOnAction(event -> {
+            int dayIndex = daySelector.getSelectionModel().getSelectedIndex();
+            if (dayIndex != -1) {
+                double currentHours = employee.getAddHours().getHours(dayIndex);
+                boolean isPTO = employee.getAddHours().isPTO(dayIndex);
+                currentHoursLabel.setText(String.format("Current: %.1f hours%s", currentHours, isPTO ? " (PTO)" : ""));
+                hoursField.setText(String.valueOf(currentHours));
+                ptoCheckBox.setSelected(isPTO);
+            }
+        });
+        
+        updateButton.setOnAction(event -> {
+            int dayIndex = daySelector.getSelectionModel().getSelectedIndex();
+            if (dayIndex == -1) {
+                messageLabel.setText("Please select a day.");
+                return;
+            }
+            
+            try {
+                double newHours = Double.parseDouble(hoursField.getText());
+                boolean isPTO = ptoCheckBox.isSelected();
+                
+                // Use a default editor ID (you could get this from the logged-in user)
+                int editorId = 1; // Default manager ID
+                
+                boolean success = editDailyEntry.editDailyEntry(editorId, employee, dayIndex, newHours, isPTO);
+                
+                if (success) {
+                    messageLabel.setText("Entry updated successfully!");
+                    currentHoursLabel.setText(String.format("Current: %.1f hours%s", newHours, isPTO ? " (PTO)" : ""));
+                } else {
+                    messageLabel.setText("Failed to update entry. Check PTO requirements.");
+                }
+            } catch (NumberFormatException ex) {
+                messageLabel.setText("Invalid number format.");
+            }
+        });
+        
+        cancelButton.setOnAction(event -> editStage.close());
+        
+        layout.getChildren().addAll(titleLabel, daySelector, currentHoursLabel, hoursField, 
+                                  ptoCheckBox, updateButton, messageLabel, cancelButton);
+        
+        Scene scene = new Scene(layout, 400, 350);
+        scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+        editStage.setTitle("Edit Daily Entry");
+        editStage.setScene(scene);
+        editStage.show();
+    }
+
+    private void openAuditTrailDialog() {
+        Stage auditStage = new Stage();
+        VBox layout = new VBox(10);
+        
+        Label titleLabel = new Label("Audit Trail Viewer");
+        
+        Button viewAllButton = new Button("View All Records");
+        Button viewByEditorButton = new Button("View by Editor ID");
+        Button viewByEmployeeButton = new Button("View by Employee");
+        Button viewSummaryButton = new Button("View Summary");
+        Button closeButton = new Button("Close");
+        
+        ListView<String> auditListView = new ListView<>();
+        auditListView.setPrefHeight(300);
+        
+        viewAllButton.setOnAction(event -> {
+            List<String> allRecords = editDailyEntry.getAllRecords();
+            auditListView.getItems().clear();
+            if (allRecords.isEmpty()) {
+                auditListView.getItems().add("No audit records found.");
+            } else {
+                auditListView.getItems().addAll(allRecords);
+            }
+        });
+        
+        viewByEditorButton.setOnAction(event -> {
+            TextInputDialog dialog = new TextInputDialog("1");
+            dialog.setTitle("Enter Editor ID");
+            dialog.setHeaderText("Enter the Editor ID to filter by:");
+            dialog.setContentText("Editor ID:");
+            
+            dialog.showAndWait().ifPresent(editorIdStr -> {
+                try {
+                    int editorId = Integer.parseInt(editorIdStr);
+                    List<String> editorRecords = editDailyEntry.getAuditByEditor(editorId);
+                    auditListView.getItems().clear();
+                    if (editorRecords.isEmpty()) {
+                        auditListView.getItems().add("No records found for Editor ID: " + editorId);
+                    } else {
+                        auditListView.getItems().addAll(editorRecords);
+                    }
+                } catch (NumberFormatException ex) {
+                    showAlert("Invalid Input", "Please enter a valid Editor ID number.");
+                }
+            });
+        });
+        
+        viewByEmployeeButton.setOnAction(event -> {
+            List<Employee> employees = employeeManager.getEmployees();
+            if (employees.isEmpty()) {
+                showAlert("No Employees", "No employees available.");
+                return;
+            }
+            
+            ChoiceDialog<Employee> employeeDialog = new ChoiceDialog<>(employees.get(0), employees);
+            employeeDialog.setTitle("Select Employee");
+            employeeDialog.setHeaderText("Choose an employee to view audit records for:");
+            employeeDialog.setContentText("Employee:");
+            
+            employeeDialog.showAndWait().ifPresent(employee -> {
+                List<String> employeeRecords = editDailyEntry.getAuditByEmployee(employee.getName());
+                auditListView.getItems().clear();
+                if (employeeRecords.isEmpty()) {
+                    auditListView.getItems().add("No records found for " + employee.getName());
+                } else {
+                    auditListView.getItems().addAll(employeeRecords);
+                }
+            });
+        });
+        
+        viewSummaryButton.setOnAction(event -> {
+            String summary = editDailyEntry.getAuditSummary();
+            auditListView.getItems().clear();
+            auditListView.getItems().add(summary);
+        });
+        
+        closeButton.setOnAction(event -> auditStage.close());
+        
+        layout.getChildren().addAll(titleLabel, viewAllButton, viewByEditorButton, viewByEmployeeButton, 
+                                  viewSummaryButton, auditListView, closeButton);
+        
+        Scene scene = new Scene(layout, 600, 500);
+        scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+        auditStage.setTitle("Audit Trail Viewer");
+        auditStage.setScene(scene);
+        auditStage.show();
     }
 
     private void refreshEmployeeList() {

@@ -40,6 +40,13 @@ public class AddHours {
         return false;
     }
 
+    public void clearPTO(int day) {
+        if (day >= 0 && day < 7 && isPTO[day]) {
+            isPTO[day] = false;
+            // Note: PTO refund would need to be handled by the calling method
+        }
+    }
+
     public int getNumDaysWorked() {
         int count = 0;
         for (int i = 0; i < hours.length; i++) {
