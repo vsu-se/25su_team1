@@ -4,12 +4,13 @@ public class AddHours {
     private double[] hours = new double[7];
     private boolean[] isPTO = new boolean[7];
 
-    
+
     public void setHours(int day, double hours) {
         if (day >= 0 && day < 7 && !isPTO[day]) {
             this.hours[day] = hours;
         }
     }
+
 
     
 
@@ -21,7 +22,6 @@ public class AddHours {
         return 0;
     }
 
-    
     public boolean setPTO(int day, PTO e) {
         if (day >= 0 && day <= 4 && !isPTO[day] && hours[day] == 0) {
             if (e.getRemainingPTOHours() >= 8) {
@@ -33,8 +33,6 @@ public class AddHours {
         }
         return false;
     }
-
-   
     public boolean isPTO(int day) {
         if (day >= 0 && day < 7) {
             return isPTO[day];
@@ -52,7 +50,6 @@ public class AddHours {
         return count;
     }
 
-   
     public double getTotalHours() {
         double total = 0;
         for (double h : hours) {
@@ -69,31 +66,30 @@ public class AddHours {
         return total;
     }
 
-     public double getWeekendHours() {
+    public double getWeekendHours() {
         return hours[5] + hours[6];
     }
-}
-<<<<<<< Updated upstream
 
+    public boolean setOrUpdateHoursForManager(int dayIndex, double newHours, boolean newIsPTO, PTO pto) {
+        if (dayIndex < 0 || dayIndex > 6) return false;
 
-
-//Helper Class
-class PTO {
-    private int remainingPTOHours;
-
-    public PTO(int startingPTOHours) {
-        this.remainingPTOHours = startingPTOHours;
-    }
-
-    public int getRemainingPTOHours() {
-        return remainingPTOHours;
-    }
-
-    public void usePTO(int hours) {
-        if (hours > 0 && remainingPTOHours >= hours) {
-            remainingPTOHours -= hours;
+        if (isPTO[dayIndex]) {
+            pto.refundPTOHours(8);
+            isPTO[dayIndex] = false;
         }
+
+        if (newIsPTO) {
+            if (newHours != 8) return false;
+            if (pto.getRemainingPTOHours() < 8) return false;
+            hours[dayIndex] = 8;
+            isPTO[dayIndex] = true;
+            pto.usePTO(8);
+        } else {
+            hours[dayIndex] = newHours;
+            isPTO[dayIndex] = false;
+        }
+
+        return true;
     }
 }
-=======
->>>>>>> Stashed changes
+    
